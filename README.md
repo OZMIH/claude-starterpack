@@ -6,7 +6,22 @@ arbeite — mit geführter Einrichtung und einer Einführung zum Mitmachen.
 *English:* My personal Claude Code setup (German): a global `CLAUDE.md` plus skills for goal writing, autonomous
 background workers and per-repo project memory. Open the repo in Claude Code and run `/einrichtung`.
 
-## So geht's
+## Am einfachsten: Claude sagen, was es tun soll
+
+Du brauchst nur Claude Code ([Installation](https://docs.claude.com/en/docs/claude-code), unter Windows in der
+PowerShell: `irm https://claude.ai/install.ps1 | iex`). Starte `claude` und schick diese Nachricht:
+
+```
+Richte mir das claude-starterpack ein: Klone https://github.com/OZMIH/claude-starterpack nach
+~/claude-starterpack (falls der Ordner schon da ist: git pull). Lies dort .claude/skills/einrichtung/SKILL.md
+und führe die Einrichtung genau so aus, wie sie dort beschrieben ist. Fehlen Node.js oder git, installier sie
+(Windows: winget). Erklär mir jeden Schritt kurz und einfach.
+```
+
+Claude holt alles, prüft deinen Rechner, fragt deinen Namen und sagt dir am Ende, wie es mit der Einführung
+weitergeht.
+
+## Selbst machen
 
 Voraussetzungen: [Claude Code](https://docs.claude.com/en/docs/claude-code) (nativer Installer), Node.js 18+ und
 git. Getestet mit Claude Code 2.1.331 unter Windows 11.
