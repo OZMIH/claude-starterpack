@@ -1,10 +1,10 @@
 ---
 name: project-memory
-description: Projekt-Gedächtnis über Sessions, Worktrees und Modelle hinweg (v2.7). Verwenden beim Wiedereinstieg („weiter", „wo waren wir", neue Session, nach /clear oder Compact), am Session-Ende oder vor einem Werkzeugwechsel („übergabe", „speichern"), für schnelle Notizen (note, merke) und zum Einrichten oder Prüfen des Memorys eines Repos (init, migrate, lint, status, archive).
+description: Projekt-Gedächtnis über Sessions, Worktrees und Modelle hinweg (v2.8). Verwenden beim Wiedereinstieg („weiter", „wo waren wir", neue Session, nach /clear oder Compact), am Session-Ende oder vor einem Werkzeugwechsel („übergabe", „speichern"), für schnelle Notizen (note, merke) und zum Einrichten oder Prüfen des Memorys eines Repos (init, migrate, lint, status, archive).
 argument-hint: "weiter [thema] | übergabe [fokus] | note \"<text>\" | merke <thema> \"<text>\" | status | init | migrate | lint | archive <slug>"
 ---
 
-# /project-memory — Dispatcher (v2.7)
+# /project-memory — Dispatcher (v2.8)
 
 Argumente (`$ARGUMENTS` oder die Anfrage des Nutzers): erstes Wort = Unterbefehl, Rest = Inhalt; ohne Unterbefehl gilt `status`. **Memory-Pfad** (unten `memory/`): `--path <dir>` >
 `.project-memory.json` im Repo-Root (`{"path": "docs/memory"}`) > `./memory/`.
@@ -44,7 +44,9 @@ Nur `CURRENT-STATE.md`, kein `VISION.md` = Format v1: Kompatibilitätsmodus laut
 - **Wegweiser statt Zahlen.** Was von selbst altert (Prozent, Zähler, Phasen), zeigt auf seine lebende Quelle;
   SETUP hält nur, was Repo-Dateien nicht selbst sagen.
 - **Eine Stelle je Wahrheit.** Entscheidungen leben in der Entscheidungsdatei des Repos, falls es eine gibt
-  (`memory/DECISIONS.md` ist dann ein Verweis), sonst in `memory/DECISIONS.md`. Geheimnisse leben im
+  (`memory/DECISIONS.md` ist dann ein Verweis), sonst in `memory/DECISIONS.md`. Offene Fragen und ausstehende
+  Entscheidungen leben in `OFFENE-PUNKTE.md` im Repo-Hauptordner (die eine Liste des Projekts); NEXT-STEPS ist die
+  Arbeits-Inbox für `note`. Geheimnisse leben im
   Passwortspeicher, das Memory nennt nur den Fundort (Lint 11).
 - **Erst laden, dann urteilen.** Über Themen und Entscheidungen aus dem INDEX wird erst nach dem Lesen gesprochen.
   SESSION-Dateien und Archive bleiben unverändert und werden nur für Historie-Fragen geöffnet.
@@ -59,7 +61,7 @@ Stand: <DETAILVIEW-Stelle + was git seit der letzten Übergabe zeigt>
 Nächster Schritt: <der eine Handgriff aus DETAILVIEW>
 Schon versucht · Werkzeuge: <aus DETAILVIEW, nur falls vorhanden>
 Läuft gerade: <RUNNING.md (GESTOPPT mit Startskript), Hintergrund-Sitzungen, andere Worktrees, Ungesichertes — oder „nichts">
-Offen: <Owner-Fragen aus DETAILVIEW, NEXT-STEPS, Thema; „Offen bei dir: n", falls die Landkarte es zeigt>
+Offen: <Owner-Fragen aus DETAILVIEW, OFFENE-PUNKTE.md, NEXT-STEPS, Thema; „Offen bei dir: n", falls die Landkarte es zeigt>
 Memory-Stand: <SESSION-NNN, n Commits seither; ⚠-Hinweise wörtlich>
 ```
    Ist DETAILVIEW von git überholt: `Widerspruch: Memory sagt …, git zeigt … → <Optionen>`. Meldet die Landkarte
@@ -90,6 +92,7 @@ Wechsel zwischen Hauptsitzung und Hintergrund-Lauf.
 |---|---|
 | Fortschritt, Fakt | `topics/<slug>.md`: `## Status` ersetzen, `## Log` datiert anhängen, `updated:` |
 | Entscheidung mit Warum | Entscheidungs-Stelle (Grundsatz); eine Repo-Datei nur mit Owner-Go und in deren ID-Format, im autonomen Lauf als NEXT-STEPS-Zeile „Entscheidung bestätigen" (Zuständig Owner) |
+| Offene Frage, ausstehende Entscheidung | `OFFENE-PUNKTE.md` im Repo-Hauptordner als `- [ ]`; erledigt `- [x]` erst, wenn die belegte Antwort oder Entscheidung im Eintrag steht |
 | Lehre („nie wieder so") | LEARNED (L-NNN, `[betrifft: …]`) |
 | Verbot · Begriff · Setup | FORBIDDEN · GLOSSARY · SETUP |
 | Verlauf | SESSION-Datei |
@@ -105,6 +108,8 @@ Wechsel zwischen Hauptsitzung und Hintergrund-Lauf.
    „Nicht anfassen".
 5. **OVERVIEW** als Wegweiser (2–3 Sätze, Risiken je eine Zeile). **NEXT-STEPS** abgleichen: Offenes bleibt,
    Erledigtes geht als `[x]`/`[>]`/`[-]` nach unten, Tabellenzeilen mit `?` bekommen einen Zuständigen.
+   **OFFENE-PUNKTE.md** abgleichen (Abschnitt in `--sammeln`): beantwortete Punkte mit Beleg auf `- [x]`, neue
+   offene Fragen und Entscheidungen der Session als `- [ ]`; fehlt die Datei, anlegen (Template Referenz).
    **RUNNING.md:** GESTOPPT klären (neu starten, wenn es die eigene Aufgabe ist, sonst nach `## Beendet`).
 6. **SESSION-Datei** `sessions/SESSION-<NNN>-<datum>.md` (Nummer aus `--sammeln`, Template Referenz, ≤ 10 Bullets,
    `commits_landed`) und eine Zeile oben in `sessions/INDEX.md`; INDEX bei neuen Themen.
@@ -128,5 +133,5 @@ Thema wie bei `weiter` auflösen; ohne Treffer zwei bis vier nahe slugs vorschla
 
 ## `status` — nur lesen
 Projekt, Vision (eine Zeile), letzte SESSION und ihr Alter, Commits seither, Memory-Quelle, Themen aktiv und
-archiviert, Zähler (Entscheidungen, Verbote, Offen, Offen bei dir), Dauerprozesse, Hygiene, Stapel-Befunde,
+archiviert, Zähler (Entscheidungen, Verbote, Offen, Offen bei dir, offene Punkte in OFFENE-PUNKTE.md), Dauerprozesse, Hygiene, Stapel-Befunde,
 gerade dran, nächste Aktion, Git. Ohne Memory: „Kein Memory hier — `init` legt es an."

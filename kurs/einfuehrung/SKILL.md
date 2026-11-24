@@ -1,6 +1,6 @@
 ---
 name: einfuehrung
-description: Führt Schritt für Schritt in die Brain-Worker-Formel des claude-starterpack ein – vier Stationen im Übungsordner (Gedächtnis anlegen, Goal klären, echten Worker bauen lassen und prüfen, Übergabe und Wiedereinstieg), danach ein Spickzettel. Erkennt selbst, bei welcher Station der Nutzer steht. Verwenden bei „/einfuehrung“, „einführung“, „zeig mir wie das geht“, „tutorial“, „wie arbeite ich damit“.
+description: Führt Schritt für Schritt in die Brain-Worker-Formel des claude-starterpack ein – vier Stationen im Übungsordner (Gedächtnis und Liste der offenen Punkte anlegen, Goal klären, echten Worker bauen lassen und prüfen, Übergabe und Wiedereinstieg), danach eine offene Frage sauber schließen und ein Spickzettel. Erkennt selbst, bei welcher Station der Nutzer steht. Verwenden bei „/einfuehrung“, „einführung“, „zeig mir wie das geht“, „tutorial“, „wie arbeite ich damit“.
 ---
 
 # Einführung in die Formel
@@ -49,7 +49,14 @@ als Erstes liest: wohin das Projekt will, wo du stehst, was als Nächstes kommt.
 1. Lass ihn `/project-memory init` tippen. Bei der Frage nach Projekt und Vision ein Vorschlag, falls ihm nichts
    einfällt: „Hallo-Seite — eine kleine Webseite, die mich begrüßt. Übung für die Formel.“
 2. Danach zeig ihm kurz, was entstanden ist (`memory/VISION.md`, `INDEX.md`, `NEXT-STEPS.md`), je ein Halbsatz.
-3. Kleine Übung: `/project-memory note "Farbe der Seite später entscheiden"` — eine Notiz für später.
+3. **Die Liste der offenen Punkte.** Im Hauptordner liegt jetzt `OFFENE-PUNKTE.md`. Erklär in zwei Sätzen: Jede
+   offene Frage und jede ausstehende Entscheidung des Projekts kommt sofort dorthin, als `- [ ]`. Abgehakt
+   (`- [x]`) wird erst, wenn die Antwort oder Entscheidung im Eintrag steht — so geht nichts verloren, und jede
+   neue Sitzung sieht beim Start, was noch offen ist. Übung: Frag ihn, welche Farbe die Seite haben soll, und
+   sag ihm, er soll noch nicht antworten. Trag die Frage als `- [ ] Welche Farbe soll die Hallo-Seite haben?`
+   unter `## Offen` ein und zeig ihm die Zeile.
+4. Der Unterschied in einem Satz: `/project-memory note "…"` ist eine schnelle Arbeitsnotiz für später
+   (landet in `NEXT-STEPS.md`); eine Frage oder Entscheidung gehört in `OFFENE-PUNKTE.md`.
 
 ## Station 2 — Das Goal
 
@@ -62,6 +69,9 @@ erzählt der Nutzer, was er am Ende sehen will, und Claude macht daraus Szenen: 
    xyzgoal macht das nach seinem Okay.
 3. Ein Satz dazu: Die Preamble am Ende des Goals ist die Arbeitsanweisung für den Worker (ehrlich berichten,
    committen, aufräumen).
+4. Die offene Farbfrage bleibt bewusst offen: Im Goal steht für die Farbe nur „schlicht, Farbe entscheidet der
+   Owner später (OFFENE-PUNKTE.md)“. Ist im Gespräch eine weitere Frage offen geblieben, kommt sie ebenfalls als
+   `- [ ]` in die Liste. So sieht er: Ein Goal muss nicht alles entscheiden, aber nichts Offenes verschwindet.
 
 ## Station 3 — Der Worker
 
@@ -106,9 +116,17 @@ weitermacht — auch Tage später, auch mit einem anderen Modell.
 1. Lass ihn `/project-memory übergabe` tippen; bestätigen, was vorgeschlagen wird. Danach ist `memory/` committet.
 2. Jetzt der Beweis: Er beendet diese Sitzung (`/exit`) und startet im selben Ordner neu (`claude`). Der Start-Hook
    lädt die Landkarte von selbst (ohne Hook: `/project-memory weiter`). Er fragt die neue Sitzung: „Wo waren wir?“
-   — sie weiß es. Danach `/einfuehrung` für den Abschluss.
+   — sie weiß es und nennt auch die offene Farbfrage („Offene Punkte: 1“). Danach `/einfuehrung` für den Abschluss.
 
-## Abschluss
+## Abschluss — vorher die offene Frage schließen
+
+Ist in `OFFENE-PUNKTE.md` noch die Farbfrage offen: Frag ihn jetzt nach der Farbe. Trag seine Antwort in den
+Eintrag ein und setz erst dann `- [x]`, etwa
+`- [x] Welche Farbe soll die Hallo-Seite haben? → Dunkelblau (Antwort des Owners, <datum>)`; committe die Datei.
+Ein Satz: Genau so wird jede offene Frage geschlossen — mit der Antwort im Eintrag, nicht nur mit einem Häkchen.
+Die Farbe selbst umsetzen kann später ein kleines Goal; für die Übung reicht es, die Frage sauber zu schließen.
+
+## Abschluss — Spickzettel
 
 Gratulier kurz (ein Satz, kein Lob-Schwall) und gib den Spickzettel:
 
@@ -121,6 +139,8 @@ DEINE FORMEL
   Sitzungsende      /project-memory übergabe
   Wiedereinstieg    /project-memory weiter  (oder „wo waren wir?“)
   Notiz zwischendurch  /project-memory note "…"
+  Offene Frage / Entscheidung   sofort in OFFENE-PUNKTE.md als - [ ]
+                                - [x] erst, wenn die Antwort im Eintrag steht
 
 REGELN, DIE DIR VIEL ÄRGER SPAREN
   Ein Ordner, ein Schreiber: nie zwei Worker im selben Repo ohne eigenen Worktree

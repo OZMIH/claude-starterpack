@@ -38,6 +38,9 @@
 //   ($PROJECT_MEMORY_CONFIG, sonst $XDG_CONFIG_HOME bzw. ~/.config/project-memory/config.json), nie im Skill.
 // - Auch bei `compact` registriert: nach dem Verdichten kommt die Landkarte des eigenen Projekts zurück.
 // - CLI `--fremdtext [dir]` (Lint-Check 12: Rohtext und Anweisungs-Muster im Memory).
+// v2.8 (2026-11-24): OFFENE-PUNKTE.md im Repo-Hauptordner ist die eine Liste offener Fragen und ausstehender
+//   Entscheidungen (Global-Kern). Die Landkarte zeigt ihre offenen `- [ ]`-Einträge, --sammeln listet sie zum
+//   Abgleich bei der Übergabe, --init-pruefen meldet, ob sie fehlt. Ohne die Datei bleibt alles wie in v2.7.
 
 const fs = require('fs');
 const os = require('os');
@@ -232,6 +235,28 @@ function openForOwner(s) {
 // ---------- Eigene Dauerprozesse (memory/RUNNING.md, v2.6) ----------
 
 const PROC_TIMEOUT = 1500; // Prozessliste; pidfile-Prüfungen sind synchron und sofort → zusammen < 2 s
+
+// v2.8: OFFENE-PUNKTE.md — gesucht in der Worktree-Wurzel der Memory-Quelle, dann im eigenen, dann im Haupt-Worktree.
+// Offen = Zeilen „- [ ]“ (auch eingerückt). checkbox=false: Datei ohne Checklisten-Format (etwa Tabellen) → nur Hinweis.
+const OP_FILE = 'OFFENE-PUNKTE.md';
+function openPoints(roots) {
+  for (const r of roots.filter(Boolean)) {
+    const file = path.join(r, OP_FILE);
+    if (!exists(file)) continue;
+    const lines = read(file).split('\n');
+    const open = lines.filter(l => /^\s*[-*] \[ \]/.test(l)).map(l => l.trim().replace(/^[-*] \[ \]\s*/, ''));
+    return { file, open, checkbox: lines.some(l => /^\s*[-*] \[[ xX>-]\]/.test(l)) };
+  }
+  return null;
+}
+
+function openPointsBlock(op, max, width) {
+  if (!op) return '';
+  if (!op.checkbox) return `### ${OP_FILE} (kein \`- [ ]\`-Format erkannt — Datei lesen: ${op.file})`;
+  const items = op.open.slice(0, max).map(t => `- [ ] ${short(t, width)}`);
+  if (op.open.length > max) items.push(`- (+${op.open.length - max} weitere in ${OP_FILE})`);
+  return [`### ${OP_FILE} (${op.open.length} offen)`, ...(items.length ? items : ['(nichts offen)'])].join('\n');
+}
 
 function pidAlive(pid) {
   try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
@@ -622,6 +647,9 @@ async function build(cwd) {
   const procs = await procsP;
   const owner = src.v2 ? openForOwner(src) : null;
   const ownerLine = owner === null ? '' : `Offen bei dir: ${owner} (NEXT-STEPS ## Open, Zuständig ${src.owner.name})`;
+  const op = src.v2 ? openPoints([src.wt.path, info ? info.top : cwd, info && info.main]) : null;
+  const opBlock = openPointsBlock(op, 6, 140);
+  const opCount = op && op.checkbox ? `Offene Punkte: ${op.open.length}` : '';
   const budget = BUDGET_BYTES - Buffer.byteLength(TRUNC_HINT, 'utf8');
   const multi = r.all.length > 1;
 
@@ -631,6 +659,7 @@ async function build(cwd) {
       '', '### VISION.md', read(path.join(src.dir, 'VISION.md')),
       '', '### INDEX.md', read(path.join(src.dir, 'INDEX.md')),
       '', '### DETAILVIEW.md', read(path.join(src.dir, 'DETAILVIEW.md')),
+      ...(opBlock ? ['', opBlock] : []), // v2.8: vor NEXT-STEPS, damit die eine Liste bei Kürzung nicht zuerst fällt
       '', '### NEXT-STEPS.md (nur Open)', section(read(path.join(src.dir, 'NEXT-STEPS.md')), '## Open') || '(kein ## Open-Abschnitt)',
       '', '### FORBIDDEN.md', read(path.join(src.dir, 'FORBIDDEN.md')),
       '', `### git${multi ? ' (dieser Worktree)' : ''}`, status || '(kein git)', log5,
@@ -652,11 +681,11 @@ async function build(cwd) {
   const title = src.v2 ? `PROJEKT-LANDKARTE (project-memory, Stufe 1) — ${projectName(src.dir, path.basename(cwd))}`
     : `PROJEKT-LANDKARTE (project-memory v1) — ${path.basename(cwd)}`;
   const wtCount = multi ? ` · Worktrees mit memory/: ${r.all.length}${src === r.own ? ' (dieser ist aktuell)' : ''}` : '';
-  const quelle = `Quelle: ${src.dir} · ${label(src)}${wtCount}${r.limited ? ` · nur ${MAX_OTHER_WORKTREES} weitere Worktrees verglichen` : ''}`;
+  const quelle = `Quelle: ${src.dir} · ${label(src)}${wtCount}${r.limited ? ` · nur ${MAX_OTHER_WORKTREES} weitere Worktrees verglichen` : ''}${opCount ? ` · ${opCount}` : ''}`;
   const quelleMin = [`Quelle: ${src === r.own ? 'memory/ dieses Worktrees' : src.dir}`, src.session ? src.session.id : 'keine SESSION-Datei',
     since ? `${since.n} Commit(s) seit Übergabe` : '', jobs.length ? `${jobs.length} Hintergrund-Sitzung(en)` : '',
     procs.some(p => p.ok === false) ? `GESTOPPT: ${procs.filter(p => p.ok === false).map(p => short(p.name, 20)).join(', ')} (Start: RUNNING.md)` : '',
-    owner ? `Offen bei dir: ${owner}` : '',
+    owner ? `Offen bei dir: ${owner}` : '', opCount,
     src.gitGaps ? 'git-Stand unvollständig' : ''].filter(Boolean).join(' · ');
   const hint = src.v2 ? 'Handoff, nicht Wahrheit (bei Widerspruch gewinnt git). „weiter"/„wo waren wir" → zuerst Wiedereinstieg laut `/project-memory weiter`; ' +
     'Thema `weiter <slug>` (INDEX Regal 2); Ende `übergabe`.' : '';
@@ -792,6 +821,17 @@ async function sammeln(cwd) {
   const owner = openForOwner(src);
   out.push(`## Inbox (NEXT-STEPS ## Open) — ${items.length} offen${owner === null ? '' : `, davon bei ${src.owner.name}: ${owner}`}`);
   out.push(...items.slice(0, 12).map(l => short(l, 200)));
+  out.push('');
+
+  // v2.8: die eine Liste offener Fragen und Entscheidungen, zum Abgleich bei der Übergabe.
+  const op = openPoints([src.wt.path, info ? info.top : cwd, info && info.main]);
+  if (!op) out.push(`## ${OP_FILE} — fehlt (pro Projekt eine Liste: offene Fragen und Entscheidungen der Session dort als \`- [ ]\` anlegen)`);
+  else if (!op.checkbox) out.push(`## ${OP_FILE} — ${op.file} (kein \`- [ ]\`-Format erkannt: Datei lesen und im Format der Datei abgleichen)`);
+  else {
+    out.push(`## ${OP_FILE} — ${op.open.length} offen (${op.file}) · abgleichen: \`- [x]\` nur mit belegter Antwort im Eintrag, neue Fragen/Entscheidungen als \`- [ ]\``);
+    out.push(...op.open.slice(0, 20).map(t => `- [ ] ${short(t, 200)}`));
+    if (op.open.length > 20) out.push(`- (+${op.open.length - 20} weitere)`);
+  }
   out.push('');
 
   const stack = stackCheck(src.dir);
@@ -988,6 +1028,7 @@ async function initPruefen(cwd) {
     ...srcs.map(s => `    ${rel(s.file)} · ${s.n} D-IDs · Format ${s.format}${srcs.length > 1 ? ' (mehrere → Owner wählt eine)' : ' → DECISIONS.md nur als Verweis'}`),
     `- AGENTS.md: ${marker(path.join(root, 'AGENTS.md'), '<!-- project-memory-agents -->')}`,
     `- CLAUDE.md: ${marker(path.join(root, 'CLAUDE.md'), '<!-- project-memory-wegweiser -->')}`,
+    `- ${OP_FILE}: ${exists(path.join(root, OP_FILE)) ? 'vorhanden (bleibt unverändert)' : 'fehlt → anlegen (Template)'}`,
     `- Obsidian-Vault: ${exists(path.join(root, '.obsidian')) ? 'ja (.obsidian/ wird bei --sammeln und Lint übergangen)' : 'nein'}`,
     `- Nutzer-Config: ${exists(USER_CONFIG_FILE) ? `${USER_CONFIG_FILE} · Owner ${ownerInfo(lay.data).name}` +
       (userConfig().claude_md_append ? ` · an CLAUDE.md zusätzlich anhängen: ${userConfig().claude_md_append}` : '') : `keine (${USER_CONFIG_FILE}) · Owner „Owner"`}`,

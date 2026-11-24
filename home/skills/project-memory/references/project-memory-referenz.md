@@ -45,6 +45,10 @@ vollständig geladen, deshalb weiß jedes Modell, was es gibt, und erfindet nich
   `GESTOPPT → Start: <skript>`. Grenze: eine wiederverwendete PID gilt als „läuft".
 - **Offen bei dir:** Zeilen der NEXT-STEPS-Tabelle, deren Zuständig der Owner ist. Alte `- [ ]`-Listen bleiben
   gültig, dann entfällt die Zeile.
+- **OFFENE-PUNKTE.md** (v2.8): die eine Liste offener Fragen und ausstehender Entscheidungen im Repo-Hauptordner
+  (gesucht im Worktree der Memory-Quelle, dann im eigenen, dann im Haupt-Worktree). Die Landkarte zeigt bis zu sechs
+  offene `- [ ]`-Einträge direkt nach NEXT-STEPS; eine Datei ohne Checklisten-Format wird nur genannt. Ohne Datei
+  entfällt der Abschnitt.
 - **Worktrees:** Jeder Worktree hat eine eigene Memory-Kopie. Verglichen wird nach der jüngsten Übergabe: höhere
   SESSION-Nummer gewinnt; gleiche Nummer mit gleichem Inhalt ist dieselbe Übergabe (auch nach Cherry-pick); sonst die
   spätere (Autorzeit des SESSION-Commits, nicht committet: mtime). Ohne `sessions/` zählt der letzte Commit auf
@@ -100,7 +104,8 @@ der Nutzer.
 2. Anlegen nach den Templates unten (`<PROJEKT>` ersetzen): README, INSTRUCTIONS, INDEX, VISION, OVERVIEW, DETAILVIEW,
    NEXT-STEPS, DECISIONS (bei Repo-Entscheidungsdatei nur das Verweis-Template), LEARNED, FORBIDDEN, GLOSSARY, SETUP,
    `topics/` (funktionen, technik, geschaeft), `sessions/INDEX.md`, `archive/.gitkeep`. RUNNING.md erst, wenn es
-   einen Dauerprozess gibt.
+   einen Dauerprozess gibt. Im Repo-Hauptordner `OFFENE-PUNKTE.md` nach Template, falls sie fehlt (eine vorhandene
+   bleibt unverändert).
 3. CLAUDE.md-Block und (falls gewünscht) AGENTS.md-Block anhängen bzw. die Datei anlegen, jeweils idempotent über den
    Marker; dazu `claude_md_append` aus der Nutzer-Config, falls gesetzt. Bestehender Inhalt bleibt unverändert.
 4. Bericht: Memory-Pfad, angelegte Dateien, DECISIONS als Verweis auf …, AGENTS.md angelegt/ergänzt, nächster
@@ -389,6 +394,18 @@ abzuschreiben. `init`/`migrate` hängen an (Marker `<!-- project-memory-wegweise
 Wissen zu diesem Projekt liegt in `memory/` (Protokoll: `memory/INSTRUCTIONS.md`). Die Landkarte kommt beim
 Session-Start vom Hook; Thema laden: `/project-memory weiter <slug>`; Session-Ende: `/project-memory übergabe`.
 <!-- project-memory-wegweiser -->
+```
+
+### OFFENE-PUNKTE.md (im Repo-Hauptordner, nicht in memory/)
+```markdown
+# OFFENE-PUNKTE — <PROJEKT>
+
+> Die eine Liste offener Fragen und ausstehender Entscheidungen. Jeder Punkt sofort als `- [ ]`.
+> Abgehakt (`- [x]`) wird erst, wenn die belegte Antwort oder die getroffene Entscheidung im Eintrag steht.
+
+## Offen
+
+## Erledigt
 ```
 
 ### AGENTS.md (optional) — `<MEMORY>` = Memory-Pfad relativ zum Repo-Root

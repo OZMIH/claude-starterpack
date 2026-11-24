@@ -29,7 +29,8 @@ claude
 
 und **`/einfuehrung`**. Vier kurze Stationen an einem Mini-Projekt:
 
-1. **Gedächtnis** — `/project-memory init`: das Notizbuch des Projekts, das jede Sitzung zuerst liest.
+1. **Gedächtnis** — `/project-memory init`: das Notizbuch des Projekts, das jede Sitzung zuerst liest, und
+   `OFFENE-PUNKTE.md`, die eine Liste offener Fragen und Entscheidungen.
 2. **Goal** — `/xyzgoal`: du erzählst, was am Ende da sein soll; heraus kommt ein prüfbares Ziel.
 3. **Worker** — ein eigenes Claude-Terminal baut das Ziel allein; das Brain prüft das Ergebnis an Belegen.
 4. **Übergabe** — `/project-memory übergabe`, neu starten, und die neue Sitzung weiß, wo du stehst.
@@ -50,11 +51,15 @@ Station 3 startet eine echte Opus-Sitzung im Hintergrund und verbraucht etwas vo
            │       fehlt etwas → frischer Worker bessert nach
            ▼
   /project-memory übergabe ──► Stand, Entscheidungen, Lehren ins memory/ des Repos
+                               offene Fragen und Entscheidungen in OFFENE-PUNKTE.md
 ```
 
 - **Das Brain baut nicht selbst.** Es redet mit dir, schreibt Goals und prüft. So bleibt sein Kontext frei.
 - **Ein Goal sagt das Was, nie das Wie.** Szenen wie „Ich tue X, ich sehe Y“ machen „fertig“ prüfbar.
 - **Fertig heißt belegt.** Commits, Testausgabe, die laufende App — nicht die Zusammenfassung eines Workers.
+- **Nichts Offenes geht verloren.** Jede offene Frage und ausstehende Entscheidung kommt sofort als `- [ ]` in
+  `OFFENE-PUNKTE.md` im Projektordner; abgehakt wird erst, wenn die Antwort im Eintrag steht. Die Landkarte zeigt
+  die Liste bei jedem Start.
 
 Wie gedacht: **Fable** als Brain, **Opus** als Worker. Ohne Fable läuft das Brain auf Opus. **Codex** für das
 Audit am Ende langer Läufe ist optional.
@@ -68,9 +73,15 @@ home/                          → kommt nach ~/.claude
   skills/xyzgoal/              Goal klären und schreiben (+ Worker-Preamble)
   skills/spawn-worker/         Worker-Terminals starten, überwachen, beantworten, aufräumen
   skills/project-memory/       Gedächtnis: weiter, übergabe, note, merke, init, lint, status
+                               (+ OFFENE-PUNKTE.md: anlegen, beim Start zeigen, bei der Übergabe abgleichen)
 kurs/einfuehrung/              die Einführung (wird als Skill mit installiert)
 .claude/skills/einrichtung/    die geführte Einrichtung
 ```
+
+## Aktualisieren
+
+Im Starterpack-Ordner `git pull`, dann `claude` und noch einmal `/einrichtung`. Geänderte Dateien werden ersetzt,
+die alte Fassung kommt vorher in die Sicherung; deine eigenen Skills und Einstellungen bleiben, wie sie sind.
 
 ## Zurücknehmen
 
